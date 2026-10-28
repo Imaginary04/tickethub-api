@@ -37,3 +37,5 @@ app:
     # Dev-only fallback. In production, set the JWT_SECRET environment variable.
     secret: ${JWT_SECRET:b5qZwb4A7pInw3W3xC6VZ1Yds//IG8pevTdDqMar5sA=}
     access-token-ttl: 15m
+    refresh-token-ttl: 7d
+    cookie-secure: false
