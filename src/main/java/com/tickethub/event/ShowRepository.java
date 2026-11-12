@@ -12,4 +12,7 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
     // would run 1 + 2N queries (the "N+1 problem").
     @EntityGraph(attributePaths = {"venue", "prices"})
     List<Show> findByEventIdOrderByStartTimeAsc(Long eventId);
+
+    // A venue with shows can't be deleted
+    boolean existsByVenueId(Long venueId);
 }
