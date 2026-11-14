@@ -1,4 +1,5 @@
 package com.tickethub.event;
+import com.tickethub.common.config.CacheConfig;
 
 import com.tickethub.common.dto.PageResponse;
 import com.tickethub.common.exception.ResourceNotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -36,6 +38,9 @@ public class PublicEventService {
     private final EventRepository eventRepository;
     private final ShowRepository showRepository;
 
+    // Same filters = same key, e.g. "mumbai:2026-12-20:CONCERT:null:0:12"
+    @Cacheable(cacheNames = CacheConfig.EVENT_SEARCH,
+            key = "#city + ':' + #date + ':' + #category + ':' + #query + ':' + #page + ':' + #size")
     @Transactional(readOnly = true)
     public PageResponse<EventCardResponse> search(String city, LocalDate date, EventCategory category,
                                                   String query, int page, int size) {
@@ -78,6 +83,8 @@ public class PublicEventService {
         }));
     }
 
+    // A 404 throws, and exceptions are never cached
+    @Cacheable(cacheNames = CacheConfig.EVENT_DETAILS, key = "#eventId")
     @Transactional(readOnly = true)
     public PublicEventResponse get(Long eventId) {
         // Drafts and cancelled events don't exist for the public

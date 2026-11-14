@@ -64,7 +64,7 @@ public class EventService {
                 event.getCategory(), event.getPosterUrl(), event.getStatus(),
                 event.getCreatedAt(), event.getUpdatedAt(), shows);
     }
-
+    @EvictPublicEventCaches
     @Transactional
     public EventResponse update(Long eventId, EventRequest request, AuthenticatedUser currentUser) {
         Event event = findOwnedEvent(eventId, currentUser);
@@ -75,6 +75,7 @@ public class EventService {
     }
 
     // DRAFT -> PUBLISHED, only with at least one upcoming show
+    @EvictPublicEventCaches
     @Transactional
     public EventResponse publish(Long eventId, AuthenticatedUser currentUser) {
         Event event = findOwnedEvent(eventId, currentUser);
@@ -90,6 +91,7 @@ public class EventService {
 
     // DRAFT or PUBLISHED -> CANCELLED (final)
     @Transactional
+    @EvictPublicEventCaches
     public EventResponse cancel(Long eventId, AuthenticatedUser currentUser) {
         Event event = findOwnedEvent(eventId, currentUser);
         requireNotCancelled(event);
@@ -97,6 +99,7 @@ public class EventService {
         return EventResponse.from(eventRepository.saveAndFlush(event));
     }
 
+    @EvictPublicEventCaches
     @Transactional
     public ShowResponse addShow(Long eventId, CreateShowRequest request, AuthenticatedUser currentUser) {
         Event event = findOwnedEvent(eventId, currentUser);
@@ -131,6 +134,7 @@ public class EventService {
         return ShowResponse.from(show);
     }
 
+    @EvictPublicEventCaches
     @Transactional
     public void deleteShow(Long eventId, Long showId, AuthenticatedUser currentUser) {
         Event event = findOwnedEvent(eventId, currentUser);
