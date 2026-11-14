@@ -1,4 +1,5 @@
 package com.tickethub.event;
+import com.tickethub.event.dto.ShowSummary;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Collection;
 
 public interface ShowRepository extends JpaRepository<Show, Long> {
 
@@ -35,4 +37,26 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
     boolean existsOverlapping(@Param("venueId") Long venueId,
                               @Param("startTime") Instant startTime,
                               @Param("endTime") Instant endTime);
+
+    // Public event page: only shows that haven't started, with venue and prices in one query
+    @EntityGraph(attributePaths = {"venue", "prices"})
+    List<Show> findByEventIdAndStartTimeAfterOrderByStartTimeAsc(Long eventId, Instant time);
+
+    // Event cards: earliest show + cheapest price for a whole page of events in ONE query.
+    // Same filters as the search; cityKey is "" for "any city" (no null parameters).
+    @Query("""
+            select new com.tickethub.event.dto.ShowSummary(s.event.id, min(s.startTime), min(p.price))
+            from Show s
+            join s.venue v
+            join s.prices p
+            where s.event.id in :eventIds
+              and s.startTime >= :from
+              and s.startTime < :to
+              and (:cityKey = '' or lower(v.city) = :cityKey)
+            group by s.event.id
+            """)
+    List<ShowSummary> summarize(@Param("eventIds") Collection<Long> eventIds,
+                                @Param("from") Instant from,
+                                @Param("to") Instant to,
+                                @Param("cityKey") String cityKey);
 }
