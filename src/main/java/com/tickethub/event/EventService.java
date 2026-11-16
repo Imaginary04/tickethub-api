@@ -144,8 +144,15 @@ public class EventService {
         if (event.getStatus() == EventStatus.PUBLISHED && showRepository.countByEventId(eventId) == 1) {
             throw new ConflictException("A published event must keep at least one show");
         }
-        showRepository.delete(show); // prices go too (cascade)
-    }
+        // Prices go too (cascade). A show with bookings is protected by the bookings foreign key (V5):
+        // flush now so that refusal happens here and becomes a clear 409.
+        try {
+            showRepository.delete(show);
+            showRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConflictException("This show has bookings and can't be deleted");
+        }
+    }    }
 
     // Not yours = 404, same rule as venues
     private Event findOwnedEvent(Long eventId, AuthenticatedUser currentUser) {
