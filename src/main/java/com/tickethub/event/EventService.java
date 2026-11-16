@@ -152,7 +152,7 @@ public class EventService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("This show has bookings and can't be deleted");
         }
-    }    }
+    }
 
     // Not yours = 404, same rule as venues
     private Event findOwnedEvent(Long eventId, AuthenticatedUser currentUser) {
