@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.Instant;
 import java.util.List;
 import java.util.Collection;
+import java.util.Optional;
 
 public interface ShowRepository extends JpaRepository<Show, Long> {
 
@@ -17,6 +18,10 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
     // would run 1 + 2N queries (the "N+1 problem").
     @EntityGraph(attributePaths = {"venue", "prices"})
     List<Show> findByEventIdOrderByStartTimeAsc(Long eventId);
+
+    // Seat map header: the show with its event, venue and prices in ONE query
+    @EntityGraph(attributePaths = {"event", "venue", "prices"})
+    Optional<Show> findWithDetailsById(Long id);
 
     // A venue with shows can't be deleted
     boolean existsByVenueId(Long venueId);
