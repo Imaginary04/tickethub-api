@@ -17,4 +17,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
               and b.holdExpiresAt < :now
             """)
     List<Booking> findExpiredHolds(@Param("now") Instant now);
+
+    // One hold per customer per show: stops one person from grabbing seats in many tabs
+    boolean existsByUserIdAndShowIdAndStatus(Long userId, Long showId, BookingStatus status);
 }

@@ -42,3 +42,7 @@ app:
     refresh-token-ttl: 7d
     cookie-secure: false
 
+  booking:
+    hold-duration: 10m      # how long seats stay held while the customer pays
+    max-seats-per-hold: 10
+
